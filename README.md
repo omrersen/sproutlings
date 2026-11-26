@@ -17,6 +17,12 @@ Windows: `OYNA.cmd` dosyasını aç. Godot kuruluysa `project.godot` ile de çal
 - U ile keşif günlüğü: beş kalıcı başarım, altın ve kasa ödülleri, bölge/mağara mini haritası, dayanıklılık göstergesi.
 - V1.3 kayıtları korunur; eski cevher durumu ilk mağaraya aktarılır. Yeni mağaralar ve başarımlar kayıt dosyasına eklenir.
 
+## V2.0 Desktop — Model yenilemesi
+- Kenney ve Quaternius CC0 paketlerinden 31 model dosyası eklendi. 16 yaratık, dört insan modeli ve seçili bitki/ağaç modelleri kullanılır.
+- Çiftçi hareket animasyonları, yaratık ve köylü boşta animasyonları, otomatik model boyutlandırma ve shiny halkası.
+- Bazı ürünler aynı modeli paylaşır; binalar ve mağaralar hâlâ prosedüreldir.
+- İlk çalıştırmada Godot modelleri içe aktarır. İnternet bağlantısı gerekmez. Kaynaklar ve lisanslar: [assets/CREDITS.md](assets/CREDITS.md).
+- Bu sürüm masaüstü oyunudur, eski web sürümü değildir.
 ## V1.9 — Canlı vadi
 - Biyomlara özgü prosedürel bitki örtüsü, pazar tezgâhları, fenerler, NPC ve çiftçi model ayrıntıları.
 - NPC'ler ahırdan ayrı köy alanına taşındı; tezgâh ve gölet için çarpışma kontrolü.
