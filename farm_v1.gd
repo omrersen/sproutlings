@@ -1,10 +1,8 @@
 extends "res://farm_v03.gd"
 
 const SAVE_V1="user://sproutlings_v1.json"
-const ONLINE_URL="http://127.0.0.1:8769/"
 var release_hint: Label
 var welcome_window: Window
-var online_button: Button
 var welcome_seen=false
 var motion_saved=true
 
@@ -23,7 +21,6 @@ func make_ui():
 	bar.offset_top=106
 	bar.offset_bottom=147
 	bar.alignment=BoxContainer.ALIGNMENT_CENTER
-	online_button=btn(bar,"Çevrim içi çiftlik / pazar",open_online)
 	btn(bar,"Rehber [F1]",show_guide)
 	welcome_window=Window.new()
 	welcome_window.title="Sproutlings • Çiftliğine hoş geldin"
@@ -38,9 +35,8 @@ func make_ui():
 	separator(v)
 	lbl(v,"1. Boş tarlaya tıkla, ek ve sula. Hazır olduğunda hasat et.\n2. İlk hasatla kazandığın Ahşap kasayı aç.\n3. Yaratığını besle ve görevlendir.\n4. Envanter, dekorasyon ve harita üzerinden çiftliğini geliştir.",16)
 	separator(v)
-	lbl(v,"Yerel 3D çiftlik ve çevrim içi web çiftliği ayrı ilerleme sistemleridir. Çevrim içi pazarın altını ve yaratıkları sunucu yönetir.",14)
+	lbl(v,"Single-player desktop game. Progress is saved locally.",14)
 	btn(v,"Çiftliğime başla",close_guide)
-	btn(v,"Çevrim içi dünyayı aç",func(): close_guide(); open_online())
 	if not testing and not welcome_seen and not "--visual-test" in OS.get_cmdline_user_args():
 		call_deferred("show_guide")
 
@@ -50,10 +46,6 @@ func show_guide():
 func close_guide():
 	welcome_seen=true
 	welcome_window.hide()
-
-func open_online():
-	OS.shell_open(ONLINE_URL)
-	notify("Çevrim içi çiftlik tarayıcıda açılıyor. Ayrı hesap kullanılır.")
 
 func refresh_ui():
 	super.refresh_ui()

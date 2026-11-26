@@ -1,8 +1,6 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0start_online.ps1"
-if errorlevel 1 echo Online server unavailable. Local 3D game can still run.
 for %%G in ("%LOCALAPPDATA%\SproutlingsEngine\Godot*win64.exe") do (
   if exist "%%~fG" (
     start "" "%%~fG" --path "%~dp0."
