@@ -1,38 +1,25 @@
-# Sproutlings V1.0
-**Çiftlik simülasyonu + yaratık koleksiyonu + oyuncu ekonomisi.**
+# Sproutlings V2.0 — Web 3D Multiplayer
 
-Sproutlings, Godot 4 ile oluşturulmuş yerel izometrik low-poly 3D çiftlik ve Python/SQLite tabanlı ayrı sunucu-yetkili çevrim içi web çiftliği içeren geliştirme sürümüdür.
+Tarayıcı tabanlı 3D çiftlik ve yaratık koleksiyonu. Windows, macOS ve mobil tarayıcılar için ayrı kurulum gerekmez. WebGL desteklenmeyen tarayıcıda erişilebilir 2D tarla listesi çalışmaya devam eder. Yerel Godot V1 kaynakları geçmiş sürüm için depoda korunur; web sürümünde Godot kullanılmaz.
 
-## Kurulum ve çalıştırma (Windows)
-- Godot 4.4.1 (veya uyumlu Godot 4 sürümü) ve Python 3.11+ kurulu olmalıdır.
-- `OYNA.cmd`: yerel sunucuyu başlatır ve 3D oyunu açar. Motor bulunamazsa Godot Project Manager üzerinden project.godot açılabilir.
-- `ONLINE.cmd`: yerel sunucuyu başlatır ve çevrim içi çiftliği tarayıcıda açar.
-- `SUNUCU.cmd`: sunucuyu ön planda çalıştırır.
-- Alternatif: `python server.py`, ardından http://127.0.0.1:8769/
-- Yerel 3D modun verileri ve çevrim içi hesap verileri birbirinden ayrıdır. Çevrim içi moda geçiş oyundaki düğme ile mümkündür, ancak çevrim içi arayüz tarayıcıdadır.
+## Çalıştır
+Python 3.11+ gerekir (yalnızca sunucu bilgisayarında).
+- Windows: `WEB-OYNA.cmd` → http://127.0.0.1:8770/
+- Diğer işletim sistemleri: `python3 server.py --port 8770`
+- Arkadaşların için: `WEB-PAYLAS.cmd` Cloudflare Quick Tunnel ile geçici HTTPS paylaşım adresi oluşturur. Resmi cloudflared Windows AMD64 istemcisi gerekir; kurulum klasörü %LOCALAPPDATA%\SproutlingsTools. Yalnızca 8770 portundaki oyun yayınlanır. Bilgisayar ve iki süreç açık kalmalıdır. Adres her tünel yeniden başlatıldığında değişebilir. İsteyen herkes bağlantıyla hesap açabilir; parola tekrar kullanmayın. Bu bir test yayınıdır, üretim hostingi değildir.
+- `WEB-KAPAT.cmd`: bu başlatıcının kaydettiği sunucu/tünel süreçlerini durdurur.
+- SQLite oyuncu verileri yerelde saklanır; Git'e gönderilmez. V1 veritabanı kopyalanmaz.
 
-## 3D yerel oyun
-- 6 biyom, 72 tarla kapasitesi, 7 ürün, 12 özgün prosedürel yaratık, 6 kasa, shiny ve pity.
-- Binalar, depolama, yem ve işleme tarifleri, evrim, görevler, ansiklopedi, dekorasyon sürükle-bırak ve 4 mevsim.
-- Rehber, grafik/ses/hareket ayarları, tam ekran, ayrı V1 kayıt ve yedekli kayıt değiştirme.
-- Fare: tarla seç; Space: ek/sula/hasat; Q/E kamera; I envanter; M yönetim; B dekor; D dekor taşı; F1 rehber; F11 tam ekran.
+## Özellikler
+- CDN veya ek oyun motoru gerektirmeyen yerel WebGL 3D renderer, izometrik döndürme, zoom, tarla seçimi, 12 prosedürel yaratık silüeti, çevrim içi avatarlar ve animasyonlar.
+- Ortak hesap, sunucuda doğrulanan tarla/hasat, envanter, yaratık bakım/üretim, kasa RNG/pity, pazar, takas, satış grafiği, görevler, liderlik.
+- Çiftlik ziyareti ve aynı çiftlikteki ziyaretçilerin görüntülenmesi; 3 saniyelik sunucu polling ile tarla değişiklikleri diğer oyunculara yansır.
+- PBKDF2 parola özeti, süreli oturum, SQLite atomik işlemler, tekrar işlem kontrolü, temel istek sınırlaması ve emanet. HTTPS tüneli yalnızca oyun hizmetini erişilebilir yapar.
+- 42 günlük tema dönüşümü; günlük/haftalık görevler.
 
-## Sunucu-yetkili çevrim içi mod
-- Kayıt/giriş, PBKDF2-HMAC-SHA256 şifre özeti, rastgele süreli oturumlar.
-- Sunucuda altın, ekim/sulama/hasat zamanlaması, seviye, kasa kazanma, güvenli RNG ve pity, yaratık sahipliği, envanter/yem üretimi ve bakım.
-- Pazar: yaratık ve malzeme/yem ilanı, emanet, %5 vergi, süre sonu/iptal ve geçmiş fiyat grafiği.
-- Takas: değiştirilemeyen teklif, gönderenin emanet varlığı, karşı tarafın kesin onayı ve SQLite atomik transferi.
-- Liderlik, salt-okunur ziyaret, günlük/haftalık görev, 42 günlük dönüşümlü festival temaları.
-- Tekrarlanan işlem kimliğiyle çift ödülü önleme, temel istek sınırı, işlem kaydı ve SQLite bütünlük kontrolleri.
+## Testler
+`python test_online.py`, `python test_browser.py`, `python test_web3d.py` (son ikisi Playwright gerektirir), `node --check farm3d.js`.
+GitHub Actions Linux üzerinde tarayıcı ve entegrasyon testlerini çalıştırır.
 
-## Test
-```sh
-python test_online.py
-python test_browser.py
-godot --headless --path . -- --self-test
-godot --path . -- --visual-test
-```
-Tarayıcı testi için Playwright ve Edge/Chromium gerekir: `pip install playwright`. Alternatif tarayıcı: `python -m playwright install chromium`. Testler geçici veritabanı kullanır. Sunucu çalışma zamanı yalnızca Python standart kütüphanesini gerektirir.
-
-## Bilinen sınırlar
-V1.0 geliştirici önizlemesidir, üretimde yayınlanmış MMO değildir. 3D mod ve çevrim içi web modu henüz aynı çiftliği eşzamanlı göstermez; 3D çok oyunculu gezinti yoktur. Çevrim içi ziyaretler web arayüzünde salt okunurdur. Festival temaları aynı görev mekanizmasını kullanır. Çevrim içi çiftlik ekonomisinin kuralları yerel 3D moddan bazı farklılıklar içerir. Grafikler prosedürel; profesyonel modelleme, geniş ölçekli performans/denge ve güvenlik denetimi yapılmadı. Sunucu sadece loopback (127.0.0.1) üzerinde çalışır; internet yayını için TLS, üretim kimlik doğrulama/operasyonel sertleştirme, yedekleme ve daha geniş test gerekir. Veritabanı ve kayıtlar Git'e dahil edilmez.
+## Sınırlar
+V2.0 geliştirici önizlemesi. Ortak çiftlik ziyareti salt okunur; oyuncular kendi tarlalarını düzenler. Avatar konumları temsilidir, serbest dolaşma ve WebSocket henüz yoktur. V1 yerel bina, çoklu biyom, evrim ve taşınabilir dekorasyon özellikleri web sürümüne henüz taşınmadı. Mac/Safari fiziksel cihaz testi yapılmadı. Uzun süreli performans, güvenlik denetimi ve üretim dağıtımı yapılmadı. Kalıcı ücretsiz hosting garantisi yoktur; GitHub Pages dinamik Python/SQLite sunucusunu barındırmaz.

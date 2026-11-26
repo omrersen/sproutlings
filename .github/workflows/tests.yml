@@ -1,16 +1,25 @@
-name: Server integration tests
+name: Web game tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  integration:
+  web:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - run: python test_online.py
-      - run: node -e "const s=require('fs').readFileSync('online.html','utf8'); new Function(s.split('<script>')[1].split('</script>')[0])"
+      - run: node --check farm3d.js
+      - run: pip install playwright
+      - run: python -m playwright install --with-deps chromium
+      - run: python test_browser.py
+      - run: python test_web3d.py

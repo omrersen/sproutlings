@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS trades(id INTEGER PRIMARY KEY,maker INTEGER REFERENCE
 CREATE TABLE IF NOT EXISTS activity(uid INTEGER,kind TEXT,ts REAL);
 CREATE TABLE IF NOT EXISTS claims(uid INTEGER,key TEXT,PRIMARY KEY(uid,key));
 CREATE TABLE IF NOT EXISTS receipts(uid INTEGER,nonce TEXT,result TEXT,PRIMARY KEY(uid,nonce));
+CREATE TABLE IF NOT EXISTS presence(uid INTEGER PRIMARY KEY REFERENCES users(id),visiting INTEGER REFERENCES users(id),last_seen REAL NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY,uid INTEGER,action TEXT,ts REAL,detail TEXT);
 CREATE INDEX IF NOT EXISTS sales_time ON sales(ts);
 CREATE INDEX IF NOT EXISTS activity_user ON activity(uid,ts);
@@ -260,14 +261,17 @@ def rate_limit(ip,auth_request):
         require(len(entries)<(10 if auth_request else 600),"Çok fazla istek")
         entries.append(now); RATE[key]=entries
 class Handler(BaseHTTPRequestHandler):
-    server_version="Sproutlings/1.0"
+    server_version="Sproutlings/2.0"
     def log_message(self,fmt,*args): pass
     def send_json(self,obj,status=200):
         raw=json.dumps(obj,ensure_ascii=False).encode(); self.send_response(status); self.send_header("Content-Type","application/json; charset=utf-8"); self.send_header("Cache-Control","no-store"); self.send_header("Content-Length",str(len(raw))); self.end_headers(); self.wfile.write(raw)
     def do_GET(self):
         if urlparse(self.path).path=="/":
             raw=(ROOT/"online.html").read_bytes(); self.send_response(200); self.send_header("Content-Type","text/html; charset=utf-8"); self.send_header("Content-Security-Policy","default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'"); self.send_header("X-Content-Type-Options","nosniff"); self.send_header("Content-Length",str(len(raw))); self.end_headers(); self.wfile.write(raw)
-        elif self.path=="/health": self.send_json({"ok":True,"version":"1.0"})
+        elif self.path=="/farm3d.js":
+            raw=(ROOT/"farm3d.js").read_bytes()
+            self.send_response(200); self.send_header("Content-Type","application/javascript; charset=utf-8"); self.send_header("X-Content-Type-Options","nosniff"); self.send_header("Cache-Control","no-cache"); self.send_header("Content-Length",str(len(raw))); self.end_headers(); self.wfile.write(raw)
+        elif self.path=="/health": self.send_json({"ok":True,"version":"2.0"})
         else: self.send_json({"error":"Bulunamadı"},404)
     def do_POST(self):
         c=None
@@ -275,16 +279,30 @@ class Handler(BaseHTTPRequestHandler):
             require(self.path=="/api","Geçersiz yol")
             require(self.headers.get("Content-Type","").startswith("application/json"),"JSON gerekli")
             origin=self.headers.get("Origin")
-            require(not origin or origin=="http://"+self.headers.get("Host",""),"Köken geçersiz")
+            host=self.headers.get("Host","")
+            require(not origin or origin in ("http://"+host,"https://"+host),"Köken geçersiz")
             n=int(self.headers.get("Content-Length","0")); require(0<n<=16384,"İstek boyutu")
             d=json.loads(self.rfile.read(n)); require(isinstance(d,dict),"Geçersiz JSON")
             a=d.get("action"); require(isinstance(a,str),"İşlem eksik")
-            rate_limit(self.client_address[0],a in ["login","register"])
+            ip=self.client_address[0]
+            # The HTTP listener is loopback only. Cloudflare overwrites this header.
+            forwarded=self.headers.get("CF-Connecting-IP","")
+            if forwarded and ip in ("127.0.0.1","::1") and os.getenv("SPROUT_TUNNEL")=="1":
+                import ipaddress
+                try: ip=str(ipaddress.ip_address(forwarded))
+                except ValueError: pass
+            rate_limit(ip,a in ["login","register"])
             now=time.time(); c=connect(); c.execute("BEGIN IMMEDIATE"); expiry(c,now)
             if a in ["login","register"]: result=auth(c,d,a=="register")
             else:
                 token=self.headers.get("Authorization","").removeprefix("Bearer "); u=getuid(c,token)
                 if a=="state": result=state(c,u,now)
+                elif a=="presence":
+                    target=num(d,"user",1,2147483647)
+                    require(one(c,"SELECT 1 FROM users WHERE id=?",(target,)),"Çiftlik bulunamadı")
+                    c.execute("INSERT INTO presence VALUES(?,?,?) ON CONFLICT(uid) DO UPDATE SET visiting=excluded.visiting,last_seen=excluded.last_seen",(u,target,now))
+                    c.execute("DELETE FROM presence WHERE last_seen<?",(now-25,))
+                    result=rows(c,"SELECT p.uid id,p.visiting,u.name FROM presence p JOIN users u ON p.uid=u.id WHERE p.visiting=? ORDER BY p.uid LIMIT 24",(target,))
                 elif a=="market": result=market(c)
                 elif a=="trades": result=trades(c,u)
                 elif a=="leaderboard": result=rows(c,"SELECT id,name,level,harvests FROM users ORDER BY level DESC,harvests DESC,id LIMIT 50")
@@ -293,7 +311,7 @@ class Handler(BaseHTTPRequestHandler):
                     kind=d.get("kind"); require(kind in ["pet","item"],"Tür")
                     result=history(c,kind,num(d,"asset",0,11 if kind=="pet" else len(ITEMS)-1),num(d,"days",7,30),now)
                 elif a=="logout":
-                    c.execute("DELETE FROM sessions WHERE token=?",(hashlib.sha256(token.encode()).hexdigest(),)); result={"message":"Çıkış"}
+                    c.execute("DELETE FROM sessions WHERE token=?",(hashlib.sha256(token.encode()).hexdigest(),)); c.execute("DELETE FROM presence WHERE uid=?",(u,)); result={"message":"Çıkış"}
                 else:
                     nonce=d.get("nonce"); require(isinstance(nonce,str) and re.fullmatch(r"[A-Za-z0-9_-]{12,80}",nonce),"İşlem kimliği gerekli")
                     receipt=one(c,"SELECT result FROM receipts WHERE uid=? AND nonce=?",(u,nonce))

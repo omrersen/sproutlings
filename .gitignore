@@ -14,3 +14,7 @@ __pycache__/
 *.pck
 *.exe
 dist/
+*.pid
+public-url.txt
+*.sqlite3.tmp
+*.exe.tmp
