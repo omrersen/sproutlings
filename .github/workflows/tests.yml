@@ -19,6 +19,7 @@ jobs:
         run: |
           set -o pipefail
           /tmp/godot/Godot_v4.4.1-stable_linux.x86_64 --headless --path . --quit-after 300 -- --self-test | tee /tmp/test.log
+          grep -q 'V1.5 PASS' /tmp/test.log
           grep -q 'V1.4 PASS' /tmp/test.log
           grep -q 'V1.3 PASS' /tmp/test.log
           grep -q 'V1.2 PASS' /tmp/test.log

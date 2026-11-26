@@ -30,7 +30,7 @@ func make_ui():
 	welcome_window.hide()
 	welcome_window.close_requested.connect(close_guide)
 	var v=window_content(welcome_window)
-	lbl(v,"SPROUTLINGS  /  V1.4",25,true)
+	lbl(v,"SPROUTLINGS  /  V1.5",25,true)
 	lbl(v,"Küçük bir çiftlikten kendi yaratık cennetine.",18)
 	separator(v)
 	lbl(v,"1. Boş tarlaya tıkla, ek ve sula. Hazır olduğunda hasat et.\n2. İlk hasatla kazandığın Ahşap kasayı aç.\n3. Yaratığını besle ve görevlendir.\n4. Envanter, dekorasyon ve harita üzerinden çiftliğini geliştir.",16)

@@ -10,6 +10,19 @@ Windows: `OYNA.cmd` dosyasını aç. Godot kuruluysa `project.godot` ile de çal
 - Kasa, nadirlik, shiny, evrim, yem üretimi ve envanter.
 - Bina, dekorasyon, görev, ansiklopedi, mevsim ve yerel kayıt.
 
+## V1.4 — Kaşif güncellemesi
+- Üç ayrı mağara: Yosun Mağarası, Köz Ocağı ve Kristal Labirenti; farklı yerleşimler, renkler, engeller ve bağımsız yenilenen cevher damarları.
+- Karakterin binalar, gölet, NPC, dekorlar ve mağara engellerine karşı konum tabanlı çarpışma kontrolü; eksen boyunca kayma ve küçük hareket adımları. Tam fizik motoru kullanılmaz.
+- Shift ile koşu: %55 hız artışı, saniyede 20 dayanıklılık tüketimi, dinlenirken saniyede 13 yenilenme.
+- U ile keşif günlüğü: beş kalıcı başarım, altın ve kasa ödülleri, bölge/mağara mini haritası, dayanıklılık göstergesi.
+- V1.3 kayıtları korunur; eski cevher durumu ilk mağaraya aktarılır. Yeni mağaralar ve başarımlar kayıt dosyasına eklenir.
+
+## V1.5 — Ustalık ve hazine
+- Dört ustalık dalı, her biri 10 seviyeye kadar: çiftçilik, madencilik, balıkçılık ve keşif. Çiftçilik büyümeyi, balıkçılık zamanlama aralığını geliştirir; diğer dallar şimdilik ilerleme göstergesi.
+- P: ustalık ve atölye paneli. Enerji iksiri, madenci tılsımı, hasat rozeti ve gezgin çantası. Üç aksesuar arasından biri kuşanılır.
+- Altı biyomda birer tek kullanımlık hazine, yakınında F ile altın, kasa ve keşif XP.
+- Aktif yaratıkların çiftlikte karakteri takip etmesi; isteğe bağlı. Basit yumuşak takip, tam yol bulma yok.
+- Önceki yerel kayıtlarla uyumlu.
 ## V1.3 — Gezilebilir dünya
 - WASD: kameraya göre hareket; F: yakındaki NPC, tarla veya mağara ile etkileşim; T: eski dekor taşıma modu.
 - Üç NPC diyalogu; balıkçılıkta dokuz saniyelik zamanlama mini oyunu; L3 sonrası üç uygun biyomdan girilebilen ayrı mağara sahnesi ve dört yenilenen cevher damarı.
