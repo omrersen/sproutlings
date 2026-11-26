@@ -17,6 +17,25 @@ Windows: `OYNA.cmd` dosyasını aç. Godot kuruluysa `project.godot` ile de çal
 - U ile keşif günlüğü: beş kalıcı başarım, altın ve kasa ödülleri, bölge/mağara mini haritası, dayanıklılık göstergesi.
 - V1.3 kayıtları korunur; eski cevher durumu ilk mağaraya aktarılır. Yeni mağaralar ve başarımlar kayıt dosyasına eklenir.
 
+## V1.8 — Oynanabilirlik
+- Y ile tarla yönetimi: 12 durum kartı, ürün seçimi, ayrı toplu ekim/sulama/hasat işlemleri.
+- Tek üst menü ve yönetim ekranında açılır kategori seçimi.
+- Madencilik ustalığı ek bakır olasılığını, keşif ustalığı dayanıklılık yenilenmesini artırır.
+- Gerçek zamanlı başlangıç testi: ekim, sulama, doğal büyüme, hasat, yaratık edinme ve kayıt yükleme. Test ayrı kayıt kullanır.
+- V1.6 ve V1.7 hikâye, sipariş, arka plan çiftlikleri ve performans göstergesiyle birlikte gelir.
+## V1.7 — Günlük yaşam
+- Üç günlük köy siparişi, tekrar alınamayan ödüller ve UTC gün yenilemesi.
+- Açık diğer biyomların sulanmış ürünleri de oyun sürerken büyür.
+- Canlı dayanıklılık ve hazır hasat göstergesi; isteğe bağlı FPS sayacı.
+- Yaratık takibinde engelden kaçınma ve uzak kalınca yakına dönme; tam yol bulma değildir.
+- V: günlük siparişler.
+
+## V1.6 — Vadinin hikâyesi
+- Sekiz bölümlük hedef zinciri, tek seferlik ödüller, Vadi Koruyucusu finali ve ardından serbest oyun.
+- Esc: açılış/duraklatma menüsü; C: hikâye. İsteğe bağlı takip kamerası.
+- Gerçek zamanlı başlangıç testi: ayrı test kaydıyla ürün ekme, sulama, büyüme, dört hasat, kasa, besleme, görevlendirme ve kayıt yükleme.
+- Test komutları: --self-test, --visual-test, --runtime-test. Tüm oyun yerel ve çevrim dışıdır.
+- Ayrı Windows export şablonları bu bilgisayarda kurulu değil; OYNA.cmd Godot ile başlatır.
 ## V1.5 — Ustalık ve hazine
 - Dört ustalık dalı, her biri 10 seviyeye kadar: çiftçilik, madencilik, balıkçılık ve keşif. Çiftçilik büyümeyi, balıkçılık zamanlama aralığını geliştirir; diğer dallar şimdilik ilerleme göstergesi.
 - P: ustalık ve atölye paneli. Enerji iksiri, madenci tılsımı, hasat rozeti ve gezgin çantası. Üç aksesuar arasından biri kuşanılır.
