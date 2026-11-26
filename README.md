@@ -17,6 +17,11 @@ Windows: `OYNA.cmd` dosyasını aç. Godot kuruluysa `project.godot` ile de çal
 - U ile keşif günlüğü: beş kalıcı başarım, altın ve kasa ödülleri, bölge/mağara mini haritası, dayanıklılık göstergesi.
 - V1.3 kayıtları korunur; eski cevher durumu ilk mağaraya aktarılır. Yeni mağaralar ve başarımlar kayıt dosyasına eklenir.
 
+## V2.1 — Valley Edition: kalite yenilemesinin ilk aşaması
+- Altı biyomda genişletilmiş dekoratif çevre, ağaç rüzgâr hareketi, bulutlar ve hareketli gölet shaderı.
+- Ortak arayüz teması, dört karakter görünümü ve kayıt uyumluluğu.
+- Gerçek oyun ekran görüntüsü kontrolü, ışık ve renk revizyonu. Tam kapsam ve açık işler: [QUALITY_ROADMAP.md](QUALITY_ROADMAP.md).
+- Yürünebilir harita henüz genişletilmedi. Kısa FPS testinde anlık düşüşler gözlendi; profesyonel görsel kalite tamamlanmadı.
 ## V2.0 Desktop — Model yenilemesi
 - Kenney ve Quaternius CC0 paketlerinden 31 model dosyası eklendi. 16 yaratık, dört insan modeli ve seçili bitki/ağaç modelleri kullanılır.
 - Çiftçi hareket animasyonları, yaratık ve köylü boşta animasyonları, otomatik model boyutlandırma ve shiny halkası.

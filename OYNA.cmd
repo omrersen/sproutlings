@@ -23,12 +23,12 @@ pause
 exit /b 1
 
 :launch
-if not exist ".godot\sproutlings_assets_v20.ready" (
+if not exist ".godot\sproutlings_assets_v21.ready" (
   echo Importing game assets...
   start "" /wait "%~1" --headless --editor --path "%~dp0." --import
   if errorlevel 1 exit /b 1
   if not exist ".godot\imported" exit /b 1
-  type nul > ".godot\sproutlings_assets_v20.ready"
+  type nul > ".godot\sproutlings_assets_v21.ready"
 )
 start "" "%~1" --path "%~dp0."
 exit /b 0

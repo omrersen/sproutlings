@@ -145,7 +145,7 @@ func make_ui():
 	pause_window.close_requested.connect(resume_game)
 	v=window_content(pause_window)
 	lbl(v,"SPROUTLINGS",32,true)
-	lbl(v,"V2.0  /  VADİNİN HİKÂYESİ",17,true)
+	lbl(v,"V2.1  /  VADİNİN HİKÂYESİ",17,true)
 	pause_info=lbl(v,"",17)
 	separator(v)
 	btn(v,"Oyuna devam et",resume_game)
