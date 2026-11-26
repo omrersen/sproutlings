@@ -30,12 +30,12 @@ func make_ui():
 	welcome_window.hide()
 	welcome_window.close_requested.connect(close_guide)
 	var v=window_content(welcome_window)
-	lbl(v,"SPROUTLINGS  /  V1.0",25,true)
+	lbl(v,"SPROUTLINGS  /  V1.1",25,true)
 	lbl(v,"Küçük bir çiftlikten kendi yaratık cennetine.",18)
 	separator(v)
 	lbl(v,"1. Boş tarlaya tıkla, ek ve sula. Hazır olduğunda hasat et.\n2. İlk hasatla kazandığın Ahşap kasayı aç.\n3. Yaratığını besle ve görevlendir.\n4. Envanter, dekorasyon ve harita üzerinden çiftliğini geliştir.",16)
 	separator(v)
-	lbl(v,"Single-player desktop game. Progress is saved locally.",14)
+	lbl(v,"Tek oyunculu masaüstü oyunu. İlerlemen bilgisayarında saklanır.",14)
 	btn(v,"Çiftliğime başla",close_guide)
 	if not testing and not welcome_seen and not "--visual-test" in OS.get_cmdline_user_args():
 		call_deferred("show_guide")
@@ -74,6 +74,7 @@ func save_game(path: String=SAVE_V1,allow_testing: bool=false):
 	f.close()
 	if not data is Dictionary: return
 	data["welcome_seen"]=welcome_seen
+	_write_extension(data)
 	f=FileAccess.open(temp,FileAccess.WRITE)
 	if not f: return
 	f.store_string(JSON.stringify(data))
@@ -100,7 +101,15 @@ func load_game(path: String=SAVE_V1):
 	f=FileAccess.open(actual,FileAccess.READ)
 	if f:
 		var data=JSON.parse_string(f.get_as_text())
-		if data is Dictionary: welcome_seen=bool(data.get("welcome_seen",false))
+		if data is Dictionary:
+			welcome_seen=bool(data.get("welcome_seen",false))
+			_read_extension(data)
+
+func _write_extension(_data: Dictionary):
+	pass
+
+func _read_extension(_data: Dictionary):
+	pass
 
 func run_tests():
 	welcome_seen=true
