@@ -289,7 +289,7 @@ func rebuild_region():
 	npc_root.name="VillageVisitors"
 	region_root.add_child(npc_root)
 	for i in range(3):
-		var p=Vector3(-5.7+i*1.05,0,-3.35)
+		var p=Vector3(-2.5+i*1.6,0,-3.65)
 		var colors=[Color("#d19e66"),Color("#74a9c8"),Color("#a28ac6")]
 		box_at(npc_root,p+Vector3(0,0.38,0),Vector3(0.40,0.62,0.33),colors[i])
 		sphere_at(npc_root,p+Vector3(0,0.89,0),Vector3(0.36,0.36,0.36),Color("#f0cc9f"))

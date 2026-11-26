@@ -17,6 +17,12 @@ Windows: `OYNA.cmd` dosyasını aç. Godot kuruluysa `project.godot` ile de çal
 - U ile keşif günlüğü: beş kalıcı başarım, altın ve kasa ödülleri, bölge/mağara mini haritası, dayanıklılık göstergesi.
 - V1.3 kayıtları korunur; eski cevher durumu ilk mağaraya aktarılır. Yeni mağaralar ve başarımlar kayıt dosyasına eklenir.
 
+## V1.9 — Canlı vadi
+- Biyomlara özgü prosedürel bitki örtüsü, pazar tezgâhları, fenerler, NPC ve çiftçi model ayrıntıları.
+- NPC'ler ahırdan ayrı köy alanına taşındı; tezgâh ve gölet için çarpışma kontrolü.
+- F ile gölet başında balıkçılık; yakındaki etkileşimler ve olgun ürünler dünyada işaretlenir.
+- G ile sade görünüm, yerel kayıtta saklanır.
+- Bitki örtüsü tek MultiMesh kullanır. NPC'ler şimdilik sabit, modeller prosedürel.
 ## V1.8 — Oynanabilirlik
 - Y ile tarla yönetimi: 12 durum kartı, ürün seçimi, ayrı toplu ekim/sulama/hasat işlemleri.
 - Tek üst menü ve yönetim ekranında açılır kategori seçimi.

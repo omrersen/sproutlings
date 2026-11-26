@@ -4,7 +4,7 @@ const TOOL_NAMES=["Olta","Kazma","Sulama kabı"]
 const WEATHER_NAMES=["Güneşli","Bulutlu","Yağmurlu","Sisli"]
 const NEW_DECOR=["Bahçe kemeri","Kuş evi","Taş fener"]
 const NEW_COST=[85,120,160]
-const NPC_POS=[Vector3(-5.7,0,-3.35),Vector3(-4.65,0,-3.35),Vector3(-3.6,0,-3.35)]
+const NPC_POS=[Vector3(-2.5,0,-3.65),Vector3(-0.9,0,-3.65),Vector3(0.7,0,-3.65)]
 const CAVE_GATE=Vector3(5.65,0,3.8)
 const ROCK_POS=[Vector3(-3.8,0,-2.1),Vector3(0,0,-3.0),Vector3(3.8,0,-2.0),Vector3(3.8,0,1.7)]
 var hero: Node3D
