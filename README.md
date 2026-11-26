@@ -10,6 +10,17 @@ Windows: `OYNA.cmd` dosyasını aç. Godot kuruluysa `project.godot` ile de çal
 - Kasa, nadirlik, shiny, evrim, yem üretimi ve envanter.
 - Bina, dekorasyon, görev, ansiklopedi, mevsim ve yerel kayıt.
 
+## V1.3 — Gezilebilir dünya
+- WASD: kameraya göre hareket; F: yakındaki NPC, tarla veya mağara ile etkileşim; T: eski dekor taşıma modu.
+- Üç NPC diyalogu; balıkçılıkta dokuz saniyelik zamanlama mini oyunu; L3 sonrası üç uygun biyomdan girilebilen ayrı mağara sahnesi ve dört yenilenen cevher damarı.
+- Olta, kazma ve sulama kabı; üçer geliştirme seviyesi, kuşanma ve bakır/altın maliyeti. L: ekipman.
+- Envanterde ürün, kaynak ve yem sekmeleri ve kartlı stok görünümü.
+- Üç yeni sabit konumlu dekor: bahçe kemeri, kuş evi ve taş fener.
+- Dört hava durumu, yağmurda otomatik sulama (hava geçişinde), aydınlatma ve yağmur parçaları.
+- Özgün sentezlenmiş döngüsel melodi, açma/kapatma seçeneği.
+- Paylaşılan temel mesh kaynakları, büyüme basamaklarına göre tarla görsel önbelleği, hafif grafik seçeneği.
+- Mevcut kayıt yolu korunur; mağaradan çıkış konumu kaydedilir, yeniden açıldığında çiftlikte başlar. Karakter hareketi sınırlandırılmıştır ancak tam fiziksel engel çarpışması henüz yoktur.
+
 ## V1.2 — Köy, keşif ve kuluçka
 - 16 yaratık: Çiçekpati, Mercansırt, Közpençe ve Aykanat dört yeni üretim türü.
 - L5, iki farklı tok yetişkin, 80 G: üç yumurta yuvası, 90 sn kuluçka, 180 sn ebeveyn bekleme. Mythic üretim dışı.
