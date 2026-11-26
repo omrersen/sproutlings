@@ -1,0 +1,126 @@
+name: Build desktop releases
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: read
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install official Godot 4.4.1 editor and export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=https://github.com/godotengine/godot-builds/releases/download/4.4.1-stable
+          curl --fail --location --retry 3 "$base/Godot_v4.4.1-stable_macos.universal.zip" -o "$RUNNER_TEMP/editor.zip"
+          ditto -x -k "$RUNNER_TEMP/editor.zip" "$RUNNER_TEMP/editor"
+          godot="$RUNNER_TEMP/editor/Godot.app/Contents/MacOS/Godot"
+          chmod +x "$godot"
+          "$godot" --version
+          curl --fail --location --retry 3 "$base/Godot_v4.4.1-stable_export_templates.tpz" -o "$RUNNER_TEMP/templates.tpz"
+          templates="$HOME/Library/Application Support/Godot/export_templates/4.4.1.stable"
+          mkdir -p "$templates"
+          unzip -q "$RUNNER_TEMP/templates.tpz" 'templates/macos.zip' 'templates/windows_release_x86_64.exe' -d "$RUNNER_TEMP/templates"
+          mv "$RUNNER_TEMP/templates/templates/"* "$templates/"
+          echo "GODOT_BIN=$godot" >> "$GITHUB_ENV"
+      - name: Import and export desktop games
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/Windows dist/Mac dist/output
+          "$GODOT_BIN" --headless --editor --path . --import
+          "$GODOT_BIN" --headless --path . --export-release 'Windows Desktop' "$PWD/dist/Windows/Sproutlings.exe"
+          "$GODOT_BIN" --headless --path . --export-release 'macOS' "$PWD/dist/mac-app.zip"
+          test -s dist/Windows/Sproutlings.exe
+          ditto -x -k dist/mac-app.zip dist/Mac
+          app="$(find dist/Mac -maxdepth 1 -type d -name '*.app' -print -quit)"
+          test -n "$app"
+          test -f "$app/Contents/Info.plist"
+          exe="$(/usr/libexec/PlistBuddy -c 'Print CFBundleExecutable' "$app/Contents/Info.plist")"
+          binary="$app/Contents/MacOS/$exe"
+          test -x "$binary"
+          lipo -archs "$binary" | tee dist/architectures.txt
+          lipo -verify_arch x86_64 arm64 "$binary"
+          codesign --force --deep --sign - "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          "$binary" --headless --quit-after 300 -- --self-test | tee dist/mac-smoke.log
+          grep -q 'V1 PASS' dist/mac-smoke.log
+          grep -q 'SPROUTLINGS SELF-TEST PASS' dist/mac-smoke.log
+          for dir in dist/Windows dist/Mac; do
+            cp server.py online.html README.md RELEASE_NOTES.txt "$dir/"
+          done
+          cp PLAY-WINDOWS.cmd ONLINE.cmd start_online.ps1 dist/Windows/
+          cp PLAY-MAC.command ONLINE-MAC.command dist/Mac/
+          chmod +x dist/Mac/*.command
+          (cd dist/Windows && zip -q -r ../output/Sproutlings-Windows-x64.zip .)
+          ditto -c -k --sequesterRsrc --keepParent dist/Mac dist/output/Sproutlings-macOS-Universal2.zip
+          (cd dist/output && shasum -a 256 *.zip > SHA256SUMS.txt)
+          cat dist/output/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-packages
+          path: dist/output/*
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-verification
+          path: |
+            dist/architectures.txt
+            dist/mac-smoke.log
+  windows-smoke:
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: desktop-packages
+          path: packages
+      - name: Verify Windows package and run exported executable
+        shell: pwsh
+        run: |
+          Expand-Archive packages/Sproutlings-Windows-x64.zip -DestinationPath game
+          $exe = (Resolve-Path game/Sproutlings.exe).Path
+          $p = Start-Process -FilePath $exe -ArgumentList @('--headless','--quit-after','300','--log-file',("`""+(Join-Path $PWD 'smoke.log')+"`""),'--','--self-test') -PassThru -Wait
+          Get-Content smoke.log
+          if ($p.ExitCode -ne 0) { throw "Windows smoke test exit $($p.ExitCode)" }
+          if (!(Select-String -Path smoke.log -SimpleMatch 'SPROUTLINGS SELF-TEST PASS')) { throw 'Windows smoke marker missing' }
+      - name: Test packaged server health
+        shell: pwsh
+        run: |
+          $p = Start-Process python -ArgumentList @('server.py','--port','18769','--db','test.sqlite3') -WorkingDirectory (Resolve-Path game).Path -PassThru
+          try {
+            $ok=$false
+            for ($i=0; $i -lt 30; $i++) {
+              try { $h=Invoke-RestMethod http://127.0.0.1:18769/health -TimeoutSec 1; if ($h.ok) { $ok=$true; break } } catch {}
+              Start-Sleep -Milliseconds 300
+            }
+            if (!$ok) { throw 'Packaged server failed' }
+          } finally { Stop-Process -Id $p.Id -ErrorAction SilentlyContinue }
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, windows-smoke]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: desktop-packages
+          path: packages
+      - name: Publish verified release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" packages/Sproutlings-Windows-x64.zip packages/Sproutlings-macOS-Universal2.zip packages/SHA256SUMS.txt --verify-tag --title "Sproutlings $TAG" --notes "Windows x64 and macOS Universal 2. Local 3D mode needs no Godot or Python. Optional separate online mode needs Python 3.11+. macOS is ad-hoc signed, not notarized; Windows is unsigned. See RELEASE_NOTES.txt inside the packages."

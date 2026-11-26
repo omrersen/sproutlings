@@ -1,0 +1,17 @@
+SPROUTLINGS v1.0.1 — Desktop packages
+
+WINDOWS (64-bit Intel/AMD)
+Extract the whole ZIP to a folder. Run Sproutlings.exe or PLAY-WINDOWS.cmd.
+No Godot installation is needed. The executable is not Microsoft-signed.
+
+macOS (Universal 2: Intel + Apple Silicon)
+Extract the ZIP with Archive Utility. Open the Sproutlings app inside the Mac folder.
+The application is ad-hoc signed, not Apple-notarized. macOS may block the first launch.
+If you trust this source and have checked the checksum, use System Settings > Privacy & Security > Open Anyway after the first attempt. Do not disable Gatekeeper globally.
+
+ONLINE MODE (optional)
+Requires Python 3.11+ separately. Use ONLINE.cmd (Windows) or ONLINE-MAC.command (Mac).
+The server runs on localhost only. Online web accounts and offline 3D progress are separate.
+To play on one shared server over the internet, additional secure deployment is required.
+The downloaded package does not connect to the developer's PC.
+Local save data uses Godot's user directory; server database stays next to server.py.
