@@ -1,5 +1,5 @@
 """Sproutlings V1 local authoritative economy. Python stdlib, SQLite."""
-import argparse, datetime as dt, hashlib, hmac, json, os, re, secrets, sqlite3, time, threading
+import argparse, datetime as dt, hashlib, hmac, json, os, re, secrets, sqlite3, time, threading, gzip
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
@@ -263,14 +263,25 @@ def rate_limit(ip,auth_request):
 class Handler(BaseHTTPRequestHandler):
     server_version="Sproutlings/2.0"
     def log_message(self,fmt,*args): pass
+    def send_bytes(self,raw,mime,status=200,cache='no-store',etag=None):
+        if etag and self.headers.get('If-None-Match')==etag:
+            self.send_response(304); self.send_header('ETag',etag); self.send_header('Cache-Control',cache); self.end_headers(); return
+        compressed=len(raw)>512 and 'gzip' in self.headers.get('Accept-Encoding','').lower()
+        if compressed: raw=gzip.compress(raw,compresslevel=5,mtime=0)
+        self.send_response(status); self.send_header('Content-Type',mime); self.send_header('Cache-Control',cache); self.send_header('Vary','Accept-Encoding'); self.send_header('X-Content-Type-Options','nosniff')
+        self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'")
+        if etag: self.send_header('ETag',etag)
+        if compressed: self.send_header('Content-Encoding','gzip')
+        self.send_header('Content-Length',str(len(raw))); self.end_headers(); self.wfile.write(raw)
     def send_json(self,obj,status=200):
-        raw=json.dumps(obj,ensure_ascii=False).encode(); self.send_response(status); self.send_header("Content-Type","application/json; charset=utf-8"); self.send_header("Cache-Control","no-store"); self.send_header("Content-Length",str(len(raw))); self.end_headers(); self.wfile.write(raw)
+        self.send_bytes(json.dumps(obj,ensure_ascii=False,separators=(',',':')).encode(),'application/json; charset=utf-8',status)
     def do_GET(self):
         if urlparse(self.path).path=="/":
-            raw=(ROOT/"online.html").read_bytes(); self.send_response(200); self.send_header("Content-Type","text/html; charset=utf-8"); self.send_header("Content-Security-Policy","default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'"); self.send_header("X-Content-Type-Options","nosniff"); self.send_header("Content-Length",str(len(raw))); self.end_headers(); self.wfile.write(raw)
-        elif self.path=="/farm3d.js":
+            raw=(ROOT/'online.html').read_bytes()
+            self.send_bytes(raw,'text/html; charset=utf-8',cache='no-cache',etag='"'+hashlib.sha256(raw).hexdigest()[:24]+'"')
+        elif urlparse(self.path).path=="/farm3d.js":
             raw=(ROOT/"farm3d.js").read_bytes()
-            self.send_response(200); self.send_header("Content-Type","application/javascript; charset=utf-8"); self.send_header("X-Content-Type-Options","nosniff"); self.send_header("Cache-Control","no-cache"); self.send_header("Content-Length",str(len(raw))); self.end_headers(); self.wfile.write(raw)
+            self.send_bytes(raw,'application/javascript; charset=utf-8',cache='public, max-age=300',etag='"'+hashlib.sha256(raw).hexdigest()[:24]+'"')
         elif self.path=="/health": self.send_json({"ok":True,"version":"2.0"})
         else: self.send_json({"error":"Bulunamadı"},404)
     def do_POST(self):
@@ -297,6 +308,17 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 token=self.headers.get("Authorization","").removeprefix("Bearer "); u=getuid(c,token)
                 if a=="state": result=state(c,u,now)
+                elif a=="sync":
+                    target=num(d,'user',1,2147483647)
+                    require(one(c,'SELECT 1 FROM users WHERE id=?',(target,)),'Çiftlik bulunamadı')
+                    c.execute('INSERT INTO presence VALUES(?,?,?) ON CONFLICT(uid) DO UPDATE SET visiting=excluded.visiting,last_seen=excluded.last_seen',(u,target,now))
+                    c.execute('DELETE FROM presence WHERE last_seen<?',(now-40,))
+                    guests=rows(c,'SELECT p.uid id,p.visiting,u.name FROM presence p JOIN users u ON u.id=p.uid WHERE p.visiting=? ORDER BY p.uid LIMIT 24',(target,))
+                    snap=state(c,u,now) if target==u else visit(c,target)
+                    snap.pop('now',None)
+                    rev=hashlib.sha256(json.dumps(snap,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()[:24]
+                    result={'now':now,'rev':rev,'guests':guests}
+                    if rev!=d.get('rev'): result['snapshot']=snap
                 elif a=="presence":
                     target=num(d,"user",1,2147483647)
                     require(one(c,"SELECT 1 FROM users WHERE id=?",(target,)),"Çiftlik bulunamadı")
@@ -320,6 +342,10 @@ class Handler(BaseHTTPRequestHandler):
                         result=action(c,u,a,d,now)
                         c.execute("INSERT INTO receipts VALUES(?,?,?)",(u,nonce,json.dumps(result,ensure_ascii=False)))
                         c.execute("INSERT INTO audit(uid,action,ts,detail) VALUES(?,?,?,?)",(u,a,now,json.dumps({k:v for k,v in d.items() if k not in ["password","nonce"]},ensure_ascii=False)))
+            if a not in ('login','register','logout') and d.get('with_state') is True and isinstance(result,dict):
+                result={**result,'state':state(c,u,now)}
+                if d.get('view')=='market': result['market']=market(c)
+                if d.get('view')=='trade': result['trades']=trades(c,u)
             c.execute("COMMIT"); self.send_json({"ok":True,"data":result})
         except (Error,ValueError,TypeError,KeyError,json.JSONDecodeError) as e:
             if c and c.in_transaction: c.execute("ROLLBACK")

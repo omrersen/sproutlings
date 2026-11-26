@@ -57,7 +57,8 @@ if(i===8||i===9||i===10){for(let k=0;k<9;k++){let a=k*6.28/9;if(i===9&&k<3)conti
 if(i===11){for(let k=0;k<3;k++)cylinder(x+(k-1)*.2,y+.49,z-.12,.16,0,.38,col.leaf2)}
 }
 const positions=Array.from({length:12},(_,i)=>[(i%4-1.5)*1.8,(Math.floor(i/4)-1)*1.75]);
-function build(snapshot,t,selected,guests){vertices=[];box(0,-.64,0,12.8,.75,10.9,col.earth);box(0,-.19,0,12.7,.22,10.8,col.grass);
+let staticKey='',staticMesh=[];
+function build(snapshot,t,selected,guests){const key=JSON.stringify([selected,snapshot.plots.map(p=>[p.slot,p.crop,p.ready>0,p.ready>0&&p.ready<=now()])]);if(key!==staticKey){vertices=[];box(0,-.64,0,12.8,.75,10.9,col.earth);box(0,-.19,0,12.7,.22,10.8,col.grass);
 for(let i=0;i<11;i++)box(-5+i,0.015,3.15,.82,.045,.66,col.path);
 for(let i=0;i<7;i++)box(-4.95,0.02,-3.2+i*.9,.66,.04,.72,col.path);
 barn(-4.7,-3.6);box(4.7,.02,-3.35,2.2,.09,1.6,rgb("#cbd4b7"));ball(4.7,.085,-3.35,1.04,.055,.73,col.water,14,4);for(let i=0;i<4;i++){let a=i*1.55;ball(4.7+Math.cos(a)*.72,.14,-3.35+Math.sin(a)*.5,.18,.03,.13,col.leaf2,8,3)}
@@ -72,6 +73,7 @@ box(x+a,.15+height/2,z+b,.045,height,.045,col.leaf);
 ball(x+a-.08,.2+height*.45,z+b,.15,.065,.08,col.leaf2,7,3);
 if(ripe){if(p.crop===5)gem(x+a,.27+height,z+b,.12,.3,plantCols[p.crop]);else if(p.crop===0||p.crop===2)cylinder(x+a,.26+height,z+b,.10,.06,.26,plantCols[p.crop],7);else ball(x+a,.24+height,z+b,.12,.14,.12,plantCols[p.crop],7,4)}
 }}
+staticKey=key;staticMesh=vertices.slice();}else vertices=staticMesh.slice();
 let active=snapshot.pets.filter(p=>p.active).slice(0,8);active.forEach((p,i)=>pet(p,-2.5+i*1.18+Math.sin(t*.7+i)*.13,3.8+Math.cos(t*.8+i)*.12,t));
 (guests||[]).slice(0,6).forEach((p,i)=>{let x=-4.1+i*1.25,z=2.75;ball(x,.64,z,.17,.17,.17,rgb("#edca9b"),8,4);box(x,.34,z,.28,.43,.19,p.id===state?.user?.id?rgb("#98d29a"):rgb("#779edb"));box(x-.09,.09,z,.10,.18,.12,col.eye);box(x+.09,.09,z,.10,.18,.12,col.eye)});
 }
@@ -106,8 +108,8 @@ world.card.querySelector(".world-head span").textContent=guest.length+" çevrim 
 let status=world.card.querySelector(".status");status.textContent=p?"Tarla "+(selected+1)+" • "+(p.crop<0?"Boş":C[p.crop]+(p.ready===0?" • Sulanmalı":p.ready<=now()?" • Hazır":" • "+Math.max(0,Math.ceil(p.ready-now()))+" sn")):"Kilitli tarla";
 let b=world.card.querySelector('[data-world="action"]');b.hidden=!mine;b.disabled=!p||p.crop>=0&&p.ready>now();b.textContent=!p?"Kilitli":p.crop<0?"Ek":p.ready===0?"Sula":p.ready<=now()?"Hasat":"Büyüyor";
 }
-function draw(t){requestAnimationFrame(draw);if(!world?.canvas||!world.card.isConnected||!snapshot()||t-renderAt<65)return;renderAt=t;
-let {canvas,gl,pr,buf,pos,color,u}=world,rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.65);let w=Math.max(1,Math.round(rect.width*dpr)),h=Math.max(1,Math.round(rect.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+function draw(t){requestAnimationFrame(draw);if(!world?.canvas||!world.card.isConnected||!snapshot()||t-renderAt<(document.hidden?500:40))return;renderAt=t;
+let {canvas,gl,pr,buf,pos,color,u}=world,rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.25);let w=Math.max(1,Math.round(rect.width*dpr)),h=Math.max(1,Math.round(rect.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
 let r=[Math.cos(yaw),0,-Math.sin(yaw)],up=unit([-Math.sin(yaw)*.67,.74,-Math.cos(yaw)*.67]),depth=cross(r,up).map(v=>-v),aspect=w/h,extent=Math.max(6.4,9.4/aspect)/zoom,sx=1/(extent*aspect),sy=1/extent;
 world.view={r,u:up,sx,sy};build(snapshot(),t/1000,selected,presence.filter(x=>x.visiting===snapshot().user.id));
 gl.viewport(0,0,w,h);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(pr);gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.DYNAMIC_DRAW);
@@ -118,13 +120,20 @@ let queued=false;new MutationObserver(()=>{if(!queued){queued=true;queueMicrotas
 new MutationObserver(()=>mount()).observe($("app"),{attributes:true,attributeFilter:["class"]});
 document.addEventListener("click",e=>{if(e.target.closest('[data-act="visit"]'))setTimeout(mount,350)});
 setInterval(mount,1000);
-async function poll(){if(!token||!state||busy||pollBusy)return;pollBusy=true;try{
+let syncRev="",syncPlace=0,syncDelay=5000,syncTimer=0;
+async function poll(){if(!token||!state||busy||pollBusy||document.hidden){syncTimer=setTimeout(poll,document.hidden?15000:1000);return}pollBusy=true;let began=performance.now();try{
 let place=tab==="social"&&visitor?visitor.user.id:state.user.id;
-presence=await api("presence",{user:place});
-if(tab==="social"&&visitor){let fresh=await api("visit",{user:visitor.user.id});if(JSON.stringify(fresh)!==JSON.stringify(visitor)){visitor=fresh;drawVisitor();mount()}}
-if(tab==="farm"){let fresh=await api("state");offset=fresh.now-Date.now()/1000;if(JSON.stringify(fresh.plots)!==JSON.stringify(state.plots)||JSON.stringify(fresh.pets)!==JSON.stringify(state.pets)||JSON.stringify(fresh.user)!==JSON.stringify(state.user)){state=fresh;$("stats").textContent=state.user.name+" • L"+state.user.level+" • "+fmt(state.user.gold)+" G";render()}else state=fresh}
-}catch(e){/* transient disconnect: existing actions still report errors */}finally{pollBusy=false}}
-setInterval(poll,3000);
+if(syncPlace!==place){syncPlace=place;syncRev=""}
+let result=await api("sync",{user:place,rev:syncRev});
+if(!token||!state)return;
+presence=result.guests;offset=result.now-Date.now()/1000;syncRev=result.rev;
+let fresh=result.snapshot;
+if(fresh&&tab==="social"&&visitor&&visitor.user.id===place){if(JSON.stringify(fresh)!==JSON.stringify(visitor)){visitor=fresh;drawVisitor();mount()}}
+if(fresh&&tab==="farm"&&place===state.user.id&&!busy){fresh.now=result.now;if(JSON.stringify(fresh.plots)!==JSON.stringify(state.plots)||JSON.stringify(fresh.pets)!==JSON.stringify(state.pets)||JSON.stringify(fresh.user)!==JSON.stringify(state.user)){state=fresh;$("stats").textContent=state.user.name+" • L"+state.user.level+" • "+fmt(state.user.gold)+" G";render()}else state=fresh}
+syncDelay=Math.min(14000,Math.max(5000,Math.round((performance.now()-began)*3)));updateWorld();
+}catch(e){syncDelay=Math.min(15000,syncDelay+3000)}finally{pollBusy=false;syncTimer=setTimeout(poll,syncDelay)}}
+syncTimer=setTimeout(poll,1000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!pollBusy){clearTimeout(syncTimer);syncTimer=setTimeout(poll,200)}});
 requestAnimationFrame(draw);
 window.sprout3d={mount,get ready(){return !!world?.gl},get guests(){return presence.length}};
 })();

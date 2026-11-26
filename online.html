@@ -10,11 +10,11 @@ const $=id=>document.getElementById(id),S=["Filizburun","Pofmantar","Damlaç","Y
 let token=sessionStorage.getItem("sprout_token")||"",state=null,tab="farm",busy=false,selectedCrop=0,keep=false,offset=0,market=[],trades=[],leaders=[],visitor=null,chart=null;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),fmt=n=>Number(n).toLocaleString("tr-TR"),now=()=>Date.now()/1000+offset;
 function msg(s,err=false){$("msg").textContent=s;$("msg").classList.toggle("warning",err)}
-async function api(action,data={},mutate=false){const body={action,...data};if(mutate)body.nonce=crypto.randomUUID();let r=await fetch("/api",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify(body)});let j=await r.json();if(!j.ok)throw Error(j.error);return j.data}
+async function api(action,data={},mutate=false){const body={action,...data};if(mutate){body.nonce=crypto.randomUUID();body.with_state=true;body.view=tab;}let r=await fetch("/api",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify(body)});let j=await r.json();if(!j.ok)throw Error(j.error);return j.data}
 async function auth(a){if(busy)return;busy=true;try{let x=await api(a,{name:$("name").value,password:$("password").value});token=x.token;sessionStorage.setItem("sprout_token",token);$("password").value="";await reload();msg("Hoş geldin, "+x.name+"!")}catch(e){msg(e.message,true)}finally{busy=false}}
 function showLogin(){token="";sessionStorage.removeItem("sprout_token");$("login").classList.remove("hidden");$("app").classList.add("hidden");$("logout").classList.add("hidden");$("stats").textContent=""}
 async function reload(){state=await api("state");offset=state.now-Date.now()/1000;$("login").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");$("stats").textContent=state.user.name+" • L"+state.user.level+" • "+fmt(state.user.gold)+" G";if(tab==="market")market=await api("market");if(tab==="trade")trades=await api("trades");if(tab==="social")leaders=await api("leaderboard");render()}
-async function act(a,d={}){if(busy)return;busy=true;try{let x=await api(a,d,true);msg(x.message||"Başarılı");await reload()}catch(e){msg(e.message,true);try{await reload()}catch(_){}}finally{busy=false}}
+async function act(a,d={}){if(busy)return;busy=true;try{let x=await api(a,d,true);msg(x.message||"Başarılı");if(x.state){state=x.state;offset=state.now-Date.now()/1000;$("stats").textContent=state.user.name+" • L"+state.user.level+" • "+fmt(state.user.gold)+" G";if(x.market)market=x.market;if(x.trades)trades=x.trades;render()}else await reload()}catch(e){msg(e.message,true);try{await reload()}catch(_){}}finally{busy=false}}
 function button(label,a,attrs="",disabled=false){return '<button data-act="'+a+'" '+attrs+(disabled?' disabled':'')+'>'+esc(label)+'</button>'}
 function select(id,opts,chosen=0){return '<select id="'+id+'">'+opts.map((x,i)=>'<option value="'+i+'" '+(i===chosen?'selected':'')+'>'+esc(x)+'</option>').join("")+'</select>'}
 function title(t,sub){return '<h2>'+esc(t)+'</h2><p class="sub">'+esc(sub)+'</p>'}
@@ -58,4 +58,4 @@ if(a==="visit"){try{visitor=await api("visit",d);drawVisitor()}catch(e){msg(e.me
 if(a==="history"){try{let kind=$("historyKind").value,asset=n("histAsset");chart={name:(kind==="pet"?S:I)[asset],data:await api("history",{kind,asset,days:n("days")})};drawChart()}catch(e){msg(e.message,true)}return}
 await act(a,d)});
 if(token)reload().catch(()=>showLogin());
-</script><script src="/farm3d.js" defer></script></body></html>
+</script><script src="/farm3d.js?v=2.0.1" defer></script></body></html>
