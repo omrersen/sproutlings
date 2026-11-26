@@ -480,7 +480,7 @@ func plot_action(i: int):
 func feed_pet(i: int):
 	if i>=creatures.size(): return
 	var p=creatures[i]
-	var r=int(p.species/2.0)
+	var r=species_rarity(int(p.species))
 	if starter_feed<=0 and p.hunger<=0 and food_stock[r]>0:
 		food_stock[r]-=1
 		p.hunger=1800.0
@@ -512,7 +512,7 @@ func refresh_ui():
 			lines.append(DECOR_NAMES[i]+(" — Yerleştirildi" if decorations[i] else " — "+str(DECOR_PRICES[i])+" G"))
 		decor_text.text="Altın: "+str(gold)+" G\n"+"\n".join(lines)
 	if not creatures.is_empty() and starter_feed<=0:
-		var r=int(creatures[selected_creature].species/2.0)
+		var r=species_rarity(int(creatures[selected_creature].species))
 		if food_stock[r]>0:
 			feed_button.text="Besle (depoda %d)" % food_stock[r]
 
@@ -575,7 +575,7 @@ func show_reveal(p: Dictionary):
 	if is_instance_valid(chest_sparks):
 		chest_sparks.queue_free()
 	preview_pet=pet_model(preview_world,int(p.species),bool(p.shiny))
-	var r=int(p.species/2.0)
+	var r=species_rarity(int(p.species))
 	make_chest(r)
 	preview_pet.scale=Vector3.ONE*0.01
 	preview_pet.visible=false

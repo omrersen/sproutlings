@@ -6,9 +6,21 @@ Godot 4.4.1 ile geliştirilen izometrik 3D çiftlik ve yaratık koleksiyon oyunu
 Windows: `OYNA.cmd` dosyasını aç. Godot kuruluysa `project.godot` ile de çalıştırılabilir.
 
 ## İçerik
-- 6 biyom, 72 tarla kapasitesi, 7 ürün ve 12 yaratık.
+- 6 biyom, 72 tarla kapasitesi, 7 ürün ve 16 yaratık.
 - Kasa, nadirlik, shiny, evrim, yem üretimi ve envanter.
 - Bina, dekorasyon, görev, ansiklopedi, mevsim ve yerel kayıt.
+
+## V1.2 — Köy, keşif ve kuluçka
+- 16 yaratık: Çiçekpati, Mercansırt, Közpençe ve Aykanat dört yeni üretim türü.
+- L5, iki farklı tok yetişkin, 80 G: üç yumurta yuvası, 90 sn kuluçka, 180 sn ebeveyn bekleme. Mythic üretim dışı.
+- Üç kalıtsal özellik, ebeveyn seçimi ve gen başına %8 mutasyon; dört özgün ebeveyn çifti için %35 yeni tür olasılığı.
+- Balıkçılık (8 sn) ve madencilik (12 sn); altı kaynak ve 100 kapasiteli ayrı kaynak çantası.
+- Üç NPC, UTC gününe göre değişen tüccar fiyatları; kaynak ve depo ürünleri alış/satışı.
+- L5 sonrası 90 saniyelik nadir biyom olayları; etkinlik kasası ve altın.
+- Yeni 3D NPC modelleri, etkinlik işareti, işlem sesleri, düğme teması ve üç yeni yönetim sekmesi.
+- N: kuluçka, K: köy. Etkinlikler yönetim panelinden açılır.
+- V1 kayıtları aynı konumda korunur. Kuluçka, kaynak toplama ve etkinlik süreleri oyun açıkken ilerler.
+- Balıkçılık ve madencilik zamanlayıcı tabanlıdır; NPC işlemleri panelden gerçekleştirilir. Yeni grafikler prosedürel low-poly modellerdir.
 
 ## V1.1 — Gelişim güncellemesi
 - Ürün bazlı tekrar edilebilir hasat sözleşmeleri ve ödüller.

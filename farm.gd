@@ -3,9 +3,9 @@ extends Node3D
 const SAVE = "user://sproutlings_v01.json"
 const RARITIES = ["Common","Uncommon","Rare","Epic","Legendary","Mythic"]
 const COLORS = [Color("#b9c7ad"),Color("#70ce88"),Color("#6cb8f4"),Color("#bd88ef"),Color("#ffcb65"),Color("#f9a5e2")]
-const SPECIES = ["Filizburun","Pofmantar","Damlaç","Yaprakuyruk","Kıvılkın","Kristip","Gecekanat","Gökboynuz","Solvaris","Lunareth","Aetherion","Verdalux"]
-const ELEMENTS = ["Toprak","Orman","Su","Orman","Ateş","Kristal","Gece","Hava","Güneş","Ay","Kozmik","Doğa"]
-const TRAITS = ["Çalışkan","Tembel","Meraklı","Oyuncu","Enerjik","Sabırlı","Utangaç","Gururlu","Cesur","Sakin","Bilge","Koruyucu"]
+const SPECIES = ["Filizburun","Pofmantar","Damlaç","Yaprakuyruk","Kıvılkın","Kristip","Gecekanat","Gökboynuz","Solvaris","Lunareth","Aetherion","Verdalux","Çiçekpati","Mercansırt","Közpençe","Aykanat"]
+const ELEMENTS = ["Toprak","Orman","Su","Orman","Ateş","Kristal","Gece","Hava","Güneş","Ay","Kozmik","Doğa","Doğa","Su","Ateş","Ay"]
+const TRAITS = ["Çalışkan","Tembel","Meraklı","Oyuncu","Enerjik","Sabırlı","Utangaç","Gururlu","Cesur","Sakin","Bilge","Koruyucu","Neşeli","Sakin","Cesur","Meraklı"]
 const TIERS = ["Ahşap","Demir","Altın","Kristal","Efsanevi","Etkinlik"]
 const ODDS = [[70,25,5,0,0,0],[45,35,17,3,0,0],[20,35,33,11,1,0],[5,20,40,29,6,0],[0,5,30,50,15,0],[15,30,35,15,4.5,0.5]]
 const PITY_R = [10,7,5,3,2,3]
@@ -85,6 +85,9 @@ func _ready():
 		run_tests()
 	else:
 		notify("Hoş geldin! Bir tarlaya tıkla, ek ve sula.")
+
+func species_rarity(id: int) -> int:
+	return int(id/2.0) if id<12 else clampi(id-12,0,3)
 
 func reset_data():
 	gold = 100
@@ -370,7 +373,7 @@ func refresh_plot(i: int):
 func pet_model(parent: Node3D, species: int, shiny: bool) -> Node3D:
 	var root = Node3D.new()
 	parent.add_child(root)
-	var r = int(species/2.0)
+	var r = species_rarity(species)
 	var color: Color = COLORS[r]
 	if shiny:
 		color = Color("#ff9ad6")
@@ -438,7 +441,7 @@ func bonus(kind: String) -> float:
 			continue
 		if id==6 and day_time<600:
 			continue
-		var r = int(id/2.0)
+		var r = species_rarity(id)
 		var value = [0.05,0.08,0.12,0.16,0.20,0.24][r]
 		var stage = 0.5 if p.growth<100 else (0.75 if p.growth<300 else 1.0)
 		var n = int(same.get(id,0))
@@ -498,7 +501,7 @@ func refresh_ui():
 	else:
 		var c = creatures[selected_creature]
 		var id = int(c.species)
-		var r = int(id/2.0)
+		var r = species_rarity(id)
 		var stage = "Yavru" if c.growth<100 else ("Genç" if c.growth<300 else "Yetişkin")
 		pet_info.text = "%s • %s\n%s / %s\n%s • XP %d\n%s • Tokluk %ds\nHız +%d%% • Verim +%d%%" % [SPECIES[id],RARITIES[r],ELEMENTS[id],TRAITS[id],stage,int(c.growth),"Aktif" if c.active else "Koleksiyon",ceili(c.hunger),roundi(bonus("speed")*100),roundi(bonus("yield")*100)]
 		feed_button.text = "Besle (%s)" % ("başlangıç yemi: "+str(starter_feed) if starter_feed>0 else (FEED_NAMES[r]+" "+str(FEED_COST[r])+" G"))
@@ -657,7 +660,7 @@ func feed_pet(i: int):
 	if p.hunger>0:
 		notify("Yaratık zaten tok.")
 		return
-	var r = int(p.species/2.0)
+	var r = species_rarity(int(p.species))
 	if starter_feed>0:
 		starter_feed-=1
 		if p.growth==0:
